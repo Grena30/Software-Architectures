@@ -1,0 +1,30 @@
+services:
+  
+  service-discovery:
+    build: ./service-discovery
+    ports:
+      - "8500:8500"
+    networks:
+      - compute-network
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "5000:5000"
+    depends_on:
+      - service-discovery
+    networks:
+      - compute-network
+
+  model:
+    build: ./model
+    ports:
+      - "8000:8000"
+    depends_on:
+      - service-discovery
+    networks:
+      - compute-network
+
+networks:
+  compute-network:
+    driver: bridge
