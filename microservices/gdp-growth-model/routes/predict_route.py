@@ -3,7 +3,7 @@ from schemas.predictive_model import InflationModel, GDPGrowthModel, Unemploymen
 from prediction_services.gdp_growth_rate import get_prediction
 
 
-router = APIRouter(prefix="/api/predict", tags=["cluster"])
+router = APIRouter(prefix="/api/predict", tags=["Predictions"])
 
 
 @router.post("/gdp_growth_rate")

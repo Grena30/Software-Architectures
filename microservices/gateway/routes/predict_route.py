@@ -4,7 +4,7 @@ from routes.service_utils import get_healthy_services, load_balancer
 import httpx
 
 
-router = APIRouter(prefix="/api/predict", tags=["cluster"])
+router = APIRouter(prefix="/api/predict", tags=["Prediction"])
 model_name = "gdp-growth-model"
 
 
@@ -17,12 +17,13 @@ def predict_gdp_growth(model: GDPGrowthModel):
     # Round robin selection of service
     service = load_balancer(services)
 
-    prediction = httpx.post(
+    resp = httpx.post(
         f"http://{service}/api/predict/gdp_growth_rate",
         json=model.model_dump(),
         timeout=10.0,
     ).json()
 
+    prediction = resp["prediction"]
     return {
         "message": "GDP growth prediction endpoint",
         "input": model.model_dump(),

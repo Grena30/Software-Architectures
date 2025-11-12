@@ -1,6 +1,11 @@
 import pandas as pd
 import joblib
 import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
+gdp_model_name = os.getenv("GDP_MODEL_NAME", "LinearRegression")
 
 
 models_path = os.path.join(
@@ -10,6 +15,11 @@ models_path = os.path.join(
 
 def get_model_paths() -> dict:
     models = {}
+
+    if not os.path.exists(models_path):
+        print(f"Models path does not exist: {models_path}")
+        return {}
+
     subdirs = [
         model
         for model in os.listdir(models_path)
@@ -32,29 +42,40 @@ def get_model_paths() -> dict:
     return models
 
 
-def get_models(model_name: str = "") -> dict:
+def get_models(model_name: str | None = None) -> dict:
 
     models = get_model_paths()
     if not models:
         return {}
 
-    loaded_models = {}
-
     if not model_name or model_name not in models.keys():
         model_name = "LinearRegression"
         print("Model name not found, switching to default")
 
+    model = model_name + ".pkl"
+    loaded_models = {}
+
     for target in models.keys():
-        model = model_name + ".pkl"
         path = os.path.join(models_path, target, model)
-        loaded_models[target] = joblib.load(path)
+        if os.path.exists(path):
+            loaded_models[target] = joblib.load(path)
+        else:
+            print(f"Warning: Model file not found at {path}")
 
     return loaded_models
 
 
+loaded_models = get_models(gdp_model_name)
+
+
 def get_prediction(prediction_type: str, data: dict) -> list:
-    loaded_models = get_models()
+    global loaded_models
+
     prediction = []
+
+    if loaded_models is None:
+        print("No model found model registry")
+        return prediction
 
     if prediction_type not in loaded_models.keys():
         print("No model found for this type of prediction")
