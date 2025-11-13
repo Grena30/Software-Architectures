@@ -1,0 +1,39 @@
+services:
+  
+  service-discovery:
+    build: ./service-discovery
+    ports:
+      - "8500:8500"
+    networks:
+      - compute-network
+
+  gateway:
+    user: root
+    build: ./gateway
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - service-discovery
+    networks:
+      - compute-network
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+
+  gdp-growth-model:
+    build: ./gdp-growth-model
+    deploy:
+      replicas: 2
+    env_file:
+      - .env
+    depends_on:
+      - service-discovery
+    networks:
+      - compute-network
+    labels:
+      - "model=${GDP_MODEL_NAME:-LinearRegression}"  
+
+networks:
+  compute-network:
+    driver: bridge
