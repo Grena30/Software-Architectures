@@ -8,6 +8,7 @@ services:
       - compute-network
 
   gateway:
+    user: root
     build: ./gateway
     ports:
       - "8000:8000"
@@ -17,6 +18,8 @@ services:
       - service-discovery
     networks:
       - compute-network
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
 
   gdp-growth-model:
     build: ./gdp-growth-model
@@ -28,6 +31,8 @@ services:
       - service-discovery
     networks:
       - compute-network
+    labels:
+      - "model=${GDP_MODEL_NAME:-LinearRegression}"  
 
 networks:
   compute-network:

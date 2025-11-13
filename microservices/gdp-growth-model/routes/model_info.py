@@ -8,12 +8,16 @@ router = APIRouter(prefix="/api/status", tags=["Status"])
 GDP_MODEL_NAME = os.getenv("GDP_MODEL_NAME", "LinearRegression")
 
 
-@router.get("/model-info")
+@router.get("/model_info")
 def model_info():
     return {"model_name": GDP_MODEL_NAME, "service_name": "gdp-growth-model"}
 
 
-@router.get("/available-models")
+@router.get("/available_models")
 def available_models():
-    models = get_model_paths()
-    return {"available_models": list(models.keys())}
+    paths = get_model_paths()
+    
+    return {
+        "message": "GDP growth models",
+        "models": paths['gdp_growth_rate']   
+    }

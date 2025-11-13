@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 
 load_dotenv()
-gdp_model_name = os.getenv("GDP_MODEL_NAME", "LinearRegression")
+GDP_GROWTH_MODEL = os.getenv("GDP_MODEL_NAME", "LinearRegression")
 
 
 models_path = os.path.join(
@@ -42,16 +42,16 @@ def get_model_paths() -> dict:
     return models
 
 
-def get_models(model_name: str | None = None) -> dict:
+def get_models(model_name: str | None = None) -> tuple[dict, str]:
 
     models = get_model_paths()
     if not models:
-        return {}
-
-    if not model_name or model_name not in models.keys():
+        return {}, ""
+    
+    if not model_name or (model_name + ".pkl") not in models["gdp_growth_rate"]:
         model_name = "LinearRegression"
         print("Model name not found, switching to default")
-
+    
     model = model_name + ".pkl"
     loaded_models = {}
 
@@ -62,10 +62,10 @@ def get_models(model_name: str | None = None) -> dict:
         else:
             print(f"Warning: Model file not found at {path}")
 
-    return loaded_models
+    return loaded_models, model_name
 
 
-loaded_models = get_models(gdp_model_name)
+loaded_models, model_name = get_models(GDP_GROWTH_MODEL)
 
 
 def get_prediction(prediction_type: str, data: dict) -> list:

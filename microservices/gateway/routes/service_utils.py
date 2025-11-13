@@ -8,11 +8,11 @@ load_dotenv()
 service_discovery_url = os.getenv("SERVICE_DISCOVERY_URL")
 
 
-def get_healthy_services(service_name: str | None = None) -> list:
+def get_healthy_services(service_name: str | None = None) -> tuple[list, int]:
     if service_name is None:
-        url = f"{service_discovery_url}/v1/health/services/"
-    else:
-        url = f"{service_discovery_url}/v1/health/service/{service_name}"
+        return [], 500
+
+    url = f"{service_discovery_url}/v1/health/service/{service_name}"
 
     resp = httpx.get(f"{url}")
 
@@ -24,8 +24,10 @@ def get_healthy_services(service_name: str | None = None) -> list:
             port = service.get("Port")
             if address and port:
                 services.append(f"{address}:{port}")
-        return services
-    return []
+        return services, 201
+
+    return [], resp.status_code
+
 
 def get_all_healthy_services() -> list:
     services = []
@@ -46,8 +48,9 @@ def get_all_healthy_services() -> list:
                 port = service.get("Port")
                 if address and port:
                     services.append(f"{address}:{port}")
-    
+
     return services
+
 
 def load_balancer(services: list[str]) -> str:
     selected_service = random.choice(services)

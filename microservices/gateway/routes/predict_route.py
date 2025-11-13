@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from schemas.predictive_model import InflationModel, GDPGrowthModel, UnemploymentModel
-from routes.service_utils import get_healthy_services, load_balancer
+from routes.service_utils import get_all_healthy_services, load_balancer
 import httpx
 
 
@@ -10,29 +10,34 @@ model_name = "gdp-growth-model"
 
 @router.post("/gdp_growth_rate")
 def predict_gdp_growth(model: GDPGrowthModel):
-    services = get_healthy_services(service_name=model_name)
+    global model_name
+    
+    services = get_all_healthy_services()
     if not services:
-        return {"error": "No healthy services available for prediction."}
+        return {"error": "No healthy services available for prediction.",
+                "services": services}
 
     # Round robin selection of service
     service = load_balancer(services)
 
     resp = httpx.post(
-        f"http://{service}/api/predict/gdp_growth_rate",
+        f"http://{service}/api/predict/",
         json=model.model_dump(),
         timeout=10.0,
     ).json()
 
     prediction = resp["prediction"]
+    model_name = resp["model"]
     return {
         "message": "GDP growth prediction endpoint",
         "input": model.model_dump(),
+        "model": model_name,
         "prediction": prediction,
     }
 
 
 @router.get("/services")
 def get_model_services():
-    services = get_healthy_services(service_name=model_name)
+    services = get_all_healthy_services()
 
     return {"Services:": services}
